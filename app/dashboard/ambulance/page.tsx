@@ -13,19 +13,25 @@ export default function AmbulanceDashboard() {
   const [user, setUser] = useState<{ name: string } | null>(null)
 
   useEffect(() => {
-    // Check if user is logged in and is an ambulance service
-    const storedUser = localStorage.getItem("user")
-
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser)
-      if (parsedUser.role !== "ambulance") {
-        router.push("/signin")
-      } else {
-        setUser(parsedUser)
+    // Check if user is logged in and is ambulance service via API
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me')
+        if (!res.ok) {
+          router.push('/signin')
+          return
+        }
+        const data = await res.json()
+        if (data.user.role !== 'ambulance') {
+          router.push('/signin')
+        } else {
+          setUser(data.user)
+        }
+      } catch {
+        router.push('/signin')
       }
-    } else {
-      router.push("/signin")
     }
+    checkAuth()
 
     // Simulate receiving emergency alerts
     const timer = setTimeout(() => {
@@ -44,10 +50,9 @@ export default function AmbulanceDashboard() {
     setNotifications((prev) => [...prev, "Response team dispatched. ETA: 5 minutes."])
   }
 
-  const handleLogout = () => {
-    // In a real app, you would clear the session
-    // localStorage.removeItem("user")
-    router.push("/signin")
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/signin')
   }
 
   if (!user) {

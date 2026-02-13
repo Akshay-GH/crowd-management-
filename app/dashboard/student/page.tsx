@@ -15,19 +15,25 @@ export default function StudentDashboard() {
   const [user, setUser] = useState<{ name: string } | null>(null)
 
   useEffect(() => {
-    // Check if user is logged in and is a student
-    const storedUser = localStorage.getItem("user")
-
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser)
-      if (parsedUser.role !== "student") {
-        router.push("/signin")
-      } else {
-        setUser(parsedUser)
+    // Check if user is logged in and is a student via API
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me')
+        if (!res.ok) {
+          router.push('/signin')
+          return
+        }
+        const data = await res.json()
+        if (data.user.role !== 'student') {
+          router.push('/signin')
+        } else {
+          setUser(data.user)
+        }
+      } catch {
+        router.push('/signin')
       }
-    } else {
-      router.push("/signin")
     }
+    checkAuth()
   }, [router])
 
   const handleSendMessage = () => {
@@ -48,10 +54,9 @@ export default function StudentDashboard() {
     setNotifications((prev) => [...prev, "Emergency alert sent! Help is on the way."])
   }
 
-  const handleLogout = () => {
-    // In a real app, you would clear the session
-    // localStorage.removeItem("user")
-    router.push("/signin")
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/signin')
   }
 
   if (!user) {

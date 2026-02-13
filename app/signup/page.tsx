@@ -1,12 +1,10 @@
+"use client";
 
-
-"use client"
-
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import type React from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,64 +12,59 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function SignUp() {
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    role: "student",
-  })
+    role: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleRoleChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, role: value }))
-  }
+    setFormData((prev) => ({ ...prev, role: value }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    localStorage.setItem("user", JSON.stringify(formData))
-    router.push(`/signin`)
-    
-    // router.push(`/dashboard/${formData.role}`)
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-    
-  //   try {
-  //     const response = await fetch('api/auth/signup', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(formData),
-  //     });
-  
-  //     const data = await response.json();
-  
-  //     if (response.ok) {
-  //       // Store token in localStorage or cookies
-  //       // localStorage.setItem('token', data.token);
-  //       router.push(`/signin`)
-  //       // router.push(`/dashboard/${data.role}`);
-  //     } else {
-  //       alert(data.message || 'Signup failed');
-  //     }
-  //   } catch (error) {
-  //     console.error('Signup error:', error);
-  //     alert('An error occurred during signup');
-  //   }
-  // };
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push("/signin");
+      } else {
+        setError(data.message || "Signup failed");
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError("An error occurred during signup");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -94,13 +87,20 @@ export default function SignUp() {
         <div className="max-w-md w-full">
           <Card className="bg-white/90 dark:bg-gray-900/80 backdrop-blur-md shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
+              <CardTitle className="text-2xl text-center">
+                Create an Account
+              </CardTitle>
               <CardDescription className="text-center">
                 Enter your information to sign up
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
+                {error && (
+                  <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
+                    {error}
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input
@@ -152,8 +152,11 @@ export default function SignUp() {
                       <Label htmlFor="student">Student</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="teacher" id="teacher" />
-                      <Label htmlFor="teacher">Security Guard</Label>
+                      <RadioGroupItem
+                        value="SecurityGuard"
+                        id="SecurityGuard"
+                      />
+                      <Label htmlFor="SecurityGuard">Security Guard</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="ambulance" id="ambulance" />
@@ -164,8 +167,8 @@ export default function SignUp() {
               </CardContent>
 
               <CardFooter className="flex flex-col space-y-4">
-                <Button type="submit" className="w-full">
-                  Sign Up
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Signing up..." : "Sign Up"}
                 </Button>
                 <div className="text-center text-sm">
                   Already have an account?{" "}
@@ -179,6 +182,5 @@ export default function SignUp() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
