@@ -16,7 +16,7 @@ The authentication system has been completely rewritten to replace **localStorag
 
 ### 2. `lib/models/User.ts` (MODIFIED)
 - **Added** `pre('save')` hook that automatically hashes passwords using `bcrypt` before saving to MongoDB.
-- **Added** `teacher` to the role enum (was `security` — now `student | teacher | ambulance`).
+- **Added** `securityGuard` to the role enum (was `security` — now `student | securityGuard | ambulance`).
 - **Added** `comparePassword` method to the interface for proper TypeScript typing.
 - Passwords are **never stored in plain text** anymore.
 
@@ -122,7 +122,7 @@ The authentication system has been completely rewritten to replace **localStorag
 | Role        | Dashboard URL            | UI Label           |
 |-------------|-------------------------|--------------------|
 | `student`   | `/dashboard/student`    | Student            |
-| `teacher`   | `/dashboard/teacher`    | Security Guard     |
+| `securityGuard`   | `/dashboard/securiyGuard`    | Security Guard     |
 | `ambulance` | `/dashboard/ambulance`  | Ambulance Service  |
 
 ---

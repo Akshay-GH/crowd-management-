@@ -26,6 +26,8 @@ import { Badge } from "@/components/ui/badge";
 
 // YOLO Backend URL
 const YOLO_API = "http://localhost:8000";
+// // YOLO API proxy (routed through Next.js to avoid browser extension blocking)
+// const YOLO_API = "/api/yolo";
 
 interface DetectionData {
   ready: boolean;
@@ -78,7 +80,10 @@ export default function TeacherDashboard() {
     try {
       setYoloError(null);
       const res = await fetch(`${YOLO_API}/start`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to start YOLO");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to start YOLO");
+        }
       setYoloRunning(true);
     } catch (err: any) {
       setYoloError(err.message ?? "Cannot reach YOLO backend");
